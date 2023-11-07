@@ -1,4 +1,4 @@
-service_name: 'example'
+service_name: 'UC_Flow_Test'
 
 http:
   url: http://0.0.0.0:9000
