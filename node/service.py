@@ -10,22 +10,39 @@ from uc_http_requester.requester import Request
 
 
 class NodeType(flow.NodeType):
-    id: str = 'UC_Flow_Test'
+    id: str = '8ea154e3-af9b-491d-837c-1c0058369536'
     type: flow.NodeType.Type = flow.NodeType.Type.action
-    name: str = 'UC_Flow_Test'
+    name: str = 'Sum_8ea1'
     is_public: bool = False
-    displayName: str = 'UC_Flow_Test'
+    displayName: str = 'Sum_8ea1'
     icon: str = '<svg><text x="8" y="50" font-size="50">🤖</text></svg>'
-    description: str = 'UC_Flow_Test'
+    description: str = 'Sum'
     properties: List[Property] = [
         Property(
-            displayName='Тестовое поле',
-            name='foo_field',
-            type=Property.Type.JSON,
-            placeholder='Foo placeholder',
-            description='Foo description',
+            displayName='Текстовое поле',
+            name='text_field',
+            type=Property.Type.STRING,
+            placeholder='Text placeholder',
+            description='Text description',
             required=True,
-            default='Test data',
+            default='Text data',
+        ),
+        Property(
+            displayName='Числовое поле',
+            name='integer_field',
+            type=Property.Type.NUMBER,
+            placeholder='Int placeholder',
+            description='Int description',
+            required=True,
+            default=0,
+        ),
+        Property(
+            displayName='Переключатель',
+            name='switcher',
+            type=Property.Type.BOOLEAN,
+            description='Число / Текст',
+            required=True,
+            default=False,
         )
     ]
 
@@ -38,8 +55,17 @@ class InfoView(info.Info):
 class ExecuteView(execute.Execute):
     async def post(self, json: NodeRunContext) -> NodeRunContext:
         try:
+            try:
+                num1 = int(json.node.data.properties['text_field'])
+            except ValueError:
+                raise ValueError('В текстовом поле должно быть числовое значение')
+
+            num2 = json.node.data.properties['integer_field']
+            result = num1 + num2
+            if json.node.data.properties['switcher']:
+                result = str(result)
             await json.save_result({
-                "result": json.node.data.properties['foo_field']
+                "result": result
             })
             json.state = RunState.complete
         except Exception as e:
