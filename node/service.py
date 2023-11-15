@@ -5,7 +5,7 @@ from uc_flow_nodes.schemas import NodeRunContext
 from uc_flow_nodes.service import NodeService
 from uc_flow_nodes.views import info, execute
 from uc_flow_schemas import flow
-from uc_flow_schemas.flow import Property, CredentialProtocol, RunState
+from uc_flow_schemas.flow import Property, CredentialProtocol, RunState, OptionValue, DisplayOptions
 from uc_http_requester.requester import Request
 
 
@@ -19,30 +19,79 @@ class NodeType(flow.NodeType):
     description: str = 'Sum'
     properties: List[Property] = [
         Property(
-            displayName='Текстовое поле',
-            name='text_field',
-            type=Property.Type.STRING,
-            placeholder='Text placeholder',
-            description='Text description',
-            required=True,
-            default='Text data',
-        ),
-        Property(
-            displayName='Числовое поле',
-            name='integer_field',
-            type=Property.Type.NUMBER,
-            placeholder='Int placeholder',
-            description='Int description',
-            required=True,
-            default=0,
-        ),
-        Property(
             displayName='Переключатель',
             name='switcher',
             type=Property.Type.BOOLEAN,
-            description='Число / Текст',
             required=True,
             default=False,
+        ),
+        Property(
+            displayName='Поле 1',
+            name='field_1',
+            type=Property.Type.OPTIONS,
+            required=True,
+            noDataExpression=True,
+            options=[
+                OptionValue(
+                    name='value_1',
+                    value='value_1',
+                ),
+                OptionValue(
+                    name='value_2',
+                    value='value_2',
+                ),
+            ],
+            displayOptions=DisplayOptions(
+                show={
+                    'switcher': [True],
+                },
+            ),
+        ),
+        Property(
+            displayName='Поле 2',
+            name='field_2',
+            type=Property.Type.OPTIONS,
+            required=True,
+            noDataExpression=True,
+            options=[
+                OptionValue(
+                    name='value_1',
+                    value='value_1',
+                ),
+                OptionValue(
+                    name='value_2',
+                    value='value_2',
+                ),
+            ],
+            displayOptions=DisplayOptions(
+                show={
+                    'switcher': [True],
+                },
+            ),
+        ),
+        Property(
+            displayName='Почта',
+            name='email_field',
+            type=Property.Type.EMAIL,
+            displayOptions=DisplayOptions(
+                show={
+                    'switcher': [True],
+                    'field_1': ['value_1'],
+                    'field_2': ['value_1'],
+                },
+            ),
+        ),
+        Property(
+            displayName='Дата и время',
+            name='datetime_field',
+            type=Property.Type.DATETIME,
+            displayOptions=DisplayOptions(
+                show={
+                    'switcher': [True],
+                    'field_1': ['value_2'],
+                    'field_2': ['value_2'],
+                },
+            ),
         )
     ]
 
@@ -55,18 +104,6 @@ class InfoView(info.Info):
 class ExecuteView(execute.Execute):
     async def post(self, json: NodeRunContext) -> NodeRunContext:
         try:
-            try:
-                num1 = int(json.node.data.properties['text_field'])
-            except ValueError:
-                raise ValueError('В текстовом поле должно быть числовое значение')
-
-            num2 = json.node.data.properties['integer_field']
-            result = num1 + num2
-            if json.node.data.properties['switcher']:
-                result = str(result)
-            await json.save_result({
-                "result": result
-            })
             json.state = RunState.complete
         except Exception as e:
             self.log.warning(f'Error {e}')
