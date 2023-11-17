@@ -12,87 +12,74 @@ from uc_http_requester.requester import Request
 class NodeType(flow.NodeType):
     id: str = '8ea154e3-af9b-491d-837c-1c0058369536'
     type: flow.NodeType.Type = flow.NodeType.Type.action
-    name: str = 'Sum_8ea1'
+    name: str = 'AlfaCRM_8ea1'
     is_public: bool = False
-    displayName: str = 'Sum_8ea1'
+    displayName: str = 'AlfaCRM_8ea1'
     icon: str = '<svg><text x="8" y="50" font-size="50">🤖</text></svg>'
-    description: str = 'Sum'
+    description: str = 'AlfaCRM'
     properties: List[Property] = [
         Property(
-            displayName='Переключатель',
-            name='switcher',
-            type=Property.Type.BOOLEAN,
-            required=True,
-            default=False,
-        ),
-        Property(
-            displayName='Поле 1',
-            name='field_1',
+            displayName='Action',
+            name='action',
             type=Property.Type.OPTIONS,
             required=True,
             noDataExpression=True,
             options=[
                 OptionValue(
-                    name='value_1',
-                    value='value_1',
+                    name='authentication',
+                    value='authentication',
                 ),
                 OptionValue(
-                    name='value_2',
-                    value='value_2',
+                    name='customer',
+                    value='customer',
                 ),
             ],
+        ),
+        # Auth properties
+        Property(
+            displayName='Адрес CRM',
+            name='host',
+            type=Property.Type.STRING,
+            default='uiscom.s20.online',
             displayOptions=DisplayOptions(
                 show={
-                    'switcher': [True],
+                    'action': ['authentication'],
                 },
             ),
         ),
         Property(
-            displayName='Поле 2',
-            name='field_2',
-            type=Property.Type.OPTIONS,
-            required=True,
-            noDataExpression=True,
-            options=[
-                OptionValue(
-                    name='value_1',
-                    value='value_1',
-                ),
-                OptionValue(
-                    name='value_2',
-                    value='value_2',
-                ),
-            ],
-            displayOptions=DisplayOptions(
-                show={
-                    'switcher': [True],
-                },
-            ),
-        ),
-        Property(
-            displayName='Почта',
-            name='email_field',
+            displayName='Email',
+            name='email',
             type=Property.Type.EMAIL,
             displayOptions=DisplayOptions(
                 show={
-                    'switcher': [True],
-                    'field_1': ['value_1'],
-                    'field_2': ['value_1'],
+                    'action': ['authentication'],
                 },
             ),
         ),
         Property(
-            displayName='Дата и время',
-            name='datetime_field',
-            type=Property.Type.DATETIME,
+            displayName='API key',
+            name='api_key',
+            type=Property.Type.STRING,
             displayOptions=DisplayOptions(
                 show={
-                    'switcher': [True],
-                    'field_1': ['value_2'],
-                    'field_2': ['value_2'],
+                    'action': ['authentication'],
+                }
+            )
+        ),
+        # Customer properties
+        Property(
+            displayName='ID филиала',
+            name='branch',
+            type=Property.Type.NUMBER,
+            default=1,
+            displayOptions=DisplayOptions(
+                show={
+                    'action': ['customer'],
                 },
             ),
-        )
+        ),
+
     ]
 
 
@@ -104,6 +91,32 @@ class InfoView(info.Info):
 class ExecuteView(execute.Execute):
     async def post(self, json: NodeRunContext) -> NodeRunContext:
         try:
+            action = json.node.data.properties['action']
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+            if action == 'authentication':
+                host = json.node.data.properties['host']
+                data = {
+                    'email': json.node.data.properties['email'],
+                    'api_key': json.node.data.properties['api_key'],
+                }
+                url = f'https://{host}/v2api/auth/login'
+                response = await Request(
+                    url=url,
+                    method=Request.Method.post,
+                    headers=headers,
+                    json=data
+                ).execute()
+                token = response.json()['token']
+                await json.save_result(
+                    {
+                        'token': token
+                    }
+                )
+            elif action == 'customer':
+                pass
             json.state = RunState.complete
         except Exception as e:
             self.log.warning(f'Error {e}')
