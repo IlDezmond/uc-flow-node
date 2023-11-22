@@ -3,7 +3,7 @@ from typing import List
 from uc_flow_schemas import flow
 from uc_flow_schemas.flow import DisplayOptions, OptionValue, Property
 
-from node.schemas.filter_params import params
+from node.schemas.properties import association_properties, contact_properties, deal_properties
 
 
 class NodeType(flow.NodeType):
@@ -16,112 +16,104 @@ class NodeType(flow.NodeType):
     description: str = 'AlfaCRM'
     properties: List[Property] = [
         Property(
-            displayName='Action',
-            name='action',
+            displayName='Object',
+            name='object',
             type=Property.Type.OPTIONS,
             required=True,
             noDataExpression=True,
             options=[
                 OptionValue(
-                    name='authentication',
-                    value='authentication',
+                    name='Contact',
+                    value='contacts',
                 ),
                 OptionValue(
-                    name='customer',
-                    value='customer',
+                    name='Deal',
+                    value='deals',
                 ),
+                OptionValue(
+                    name='Association',
+                    value='association',
+                )
             ],
         ),
-        # Auth properties
         Property(
-            displayName='CRM host',
-            name='host',
+            displayName='Api token',
+            name='token',
             type=Property.Type.STRING,
-            default='uiscom.s20.online',
-            displayOptions=DisplayOptions(
-                show={
-                    'action': ['authentication', 'customer'],
-                },
-            ),
+            required=True,
         ),
         Property(
-            displayName='Email',
-            name='email',
-            type=Property.Type.EMAIL,
-            default='vehemop789@weirby.com',
-            displayOptions=DisplayOptions(
-                show={
-                    'action': ['authentication'],
-                },
-            ),
-        ),
-        Property(
-            displayName='API key',
-            name='api_key',
-            type=Property.Type.STRING,
-            default='7acaf091-77b5-11ee-8640-3cecef7ebd64',
-            displayOptions=DisplayOptions(
-                show={
-                    'action': ['authentication'],
-                }
-            )
-        ),
-        # Customer properties
-        Property(
-          displayName='Token',
-          name='token',
-          type=Property.Type.JSON,
-          displayOptions=DisplayOptions(
-              show={
-                  'action': ['customer'],
-              }
-          )
-        ),
-        Property(
-            displayName='Branch',
-            name='branch',
-            type=Property.Type.NUMBER,
-            default=1,
-            displayOptions=DisplayOptions(
-                show={
-                    'action': ['customer'],
-                },
-            ),
-        ),
-        Property(
-            displayName='Operation',
-            name='operation',
+            displayName='Method',
+            name='method',
             type=Property.Type.OPTIONS,
-            noDataExpression=True,
-            displayOptions=DisplayOptions(
-                show={
-                    'action': ['customer'],
-                },
-            ),
+            required=True,
             options=[
                 OptionValue(
-                    name='index',
-                    value='index',
+                    name='List',
+                    value='list',
                 ),
                 OptionValue(
-                    name='create',
+                    name='Get',
+                    value='get',
+                ),
+                OptionValue(
+                    name='Create',
                     value='create',
                 ),
                 OptionValue(
-                    name='update',
+                    name='Update',
                     value='update',
-                )
-            ]
+                ),
+                OptionValue(
+                    name='Delete',
+                    value='delete',
+                ),
+            ],
+        ),
+        # Filter properties
+        Property(
+            displayName='Limit',
+            name='limit',
+            type=Property.Type.NUMBER,
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['contacts', 'deals'],
+                    'method': ['list'],
+                },
+            ),
         ),
         Property(
-            displayName='Parameters',
-            name='params',
+            displayName='After',
+            name='after',
+            type=Property.Type.NUMBER,
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['contacts', 'deals'],
+                    'method': ['list'],
+                },
+            ),
+        ),
+        Property(
+            displayName='Object id',
+            name='object_id',
+            type=Property.Type.NUMBER,
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['contacts', 'deals'],
+                    'method': ['get', 'delete'],
+                }
+            )
+        ),
+        # Deal properties
+        Property(
+            displayName='Deal properties',
+            name='deal_properties',
             type=Property.Type.COLLECTION,
-            placeholder='Add',
             default={},
             displayOptions=DisplayOptions(
                 show={
-                    'action': ['customer'],
+                    'object': ['deals'],
+                    'method': ['create', 'update'],
                 }
             ),
             options=[
@@ -129,10 +121,84 @@ class NodeType(flow.NodeType):
                     displayName=param.displayName,
                     name=param.name,
                     type=param.type,
-                    description=param.description,
-                    default='',
                 )
-                for param in params
+                for param in deal_properties
             ]
-        )
+        ),
+        # Contact properties
+        Property(
+            displayName='Contact properties',
+            name='contact_properties',
+            type=Property.Type.COLLECTION,
+            default={},
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['contacts'],
+                    'method': ['create', 'update'],
+                }
+            ),
+            options=[
+                Property(
+                    displayName=param.displayName,
+                    name=param.name,
+                    type=param.type,
+                )
+                for param in contact_properties
+            ]
+        ),
+        # Association properties
+        Property(
+            displayName='Association category',
+            name='association_category',
+            type=Property.Type.OPTIONS,
+            default={},
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['association'],
+                }
+            ),
+            options=[
+                OptionValue(
+                    name='HUBSPOT_DEFINED',
+                    value='HUBSPOT_DEFINED',
+                ),
+                OptionValue(
+                    name='USER_DEFINED',
+                    value='USER_DEFINED',
+                ),
+                OptionValue(
+                    name='INTEGRATOR_DEFINED',
+                    value='INTEGRATOR_DEFINED',
+                ),
+            ],
+        ),
+        Property(
+            displayName='Association type id',
+            name='association_type_id',
+            type=Property.Type.NUMBER,
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['association'],
+                }
+            ),
+        ),
+        Property(
+            displayName='Association properties',
+            name='association_properties',
+            type=Property.Type.COLLECTION,
+            default={},
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['association'],
+                }
+            ),
+            options=[
+                Property(
+                    displayName=param.displayName,
+                    name=param.name,
+                    type=param.type,
+                )
+                for param in association_properties
+            ]
+        ),
     ]
