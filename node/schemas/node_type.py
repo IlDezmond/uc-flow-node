@@ -7,13 +7,13 @@ from node.schemas.properties import association_properties, contact_properties, 
 
 
 class NodeType(flow.NodeType):
-    id: str = '8ea154e3-af9b-491d-837c-1c0058369536'
+    id: str = 'de8e3ff2-3aed-470d-b847-d6909a0b95bd'
     type: flow.NodeType.Type = flow.NodeType.Type.action
-    name: str = 'AlfaCRM_8ea1'
+    name: str = 'Hubspot'
     is_public: bool = False
-    displayName: str = 'AlfaCRM_8ea1'
+    displayName: str = 'Hubspot'
     icon: str = '<svg><text x="8" y="50" font-size="50">🤖</text></svg>'
-    description: str = 'AlfaCRM'
+    description: str = 'Hubspot'
     properties: List[Property] = [
         Property(
             displayName='Object',
@@ -46,7 +46,11 @@ class NodeType(flow.NodeType):
             displayName='Method',
             name='method',
             type=Property.Type.OPTIONS,
-            required=True,
+            displayOptions=DisplayOptions(
+                show={
+                    'object': ['contacts', 'deals'],
+                },
+            ),
             options=[
                 OptionValue(
                     name='List',
@@ -100,7 +104,7 @@ class NodeType(flow.NodeType):
             displayOptions=DisplayOptions(
                 show={
                     'object': ['contacts', 'deals'],
-                    'method': ['get', 'delete'],
+                    'method': ['get', 'delete', 'update'],
                 }
             )
         ),
@@ -110,6 +114,7 @@ class NodeType(flow.NodeType):
             name='deal_properties',
             type=Property.Type.COLLECTION,
             default={},
+            placeholder='Add',
             displayOptions=DisplayOptions(
                 show={
                     'object': ['deals'],
@@ -121,6 +126,8 @@ class NodeType(flow.NodeType):
                     displayName=param.displayName,
                     name=param.name,
                     type=param.type,
+                    default='',
+                    description='temp_desc'
                 )
                 for param in deal_properties
             ]
@@ -131,6 +138,7 @@ class NodeType(flow.NodeType):
             name='contact_properties',
             type=Property.Type.COLLECTION,
             default={},
+            placeholder='Add',
             displayOptions=DisplayOptions(
                 show={
                     'object': ['contacts'],
@@ -142,6 +150,8 @@ class NodeType(flow.NodeType):
                     displayName=param.displayName,
                     name=param.name,
                     type=param.type,
+                    default='',
+                    description='temp_desc'
                 )
                 for param in contact_properties
             ]
@@ -187,6 +197,7 @@ class NodeType(flow.NodeType):
             name='association_properties',
             type=Property.Type.COLLECTION,
             default={},
+            placeholder='Add',
             displayOptions=DisplayOptions(
                 show={
                     'object': ['association'],
@@ -197,6 +208,8 @@ class NodeType(flow.NodeType):
                     displayName=param.displayName,
                     name=param.name,
                     type=param.type,
+                    default='',
+                    description='temp_desc'
                 )
                 for param in association_properties
             ]
